@@ -17,6 +17,7 @@ class Header extends Component {
     }
 
     logOut() {
+        localStorage.removeItem('user');
         window.location.href = "http://"+window.location.hostname+":3000";
     }
 
