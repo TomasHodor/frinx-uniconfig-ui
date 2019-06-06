@@ -38,7 +38,9 @@ class DeviceView extends Component {
             showConsole: false,
             deletingSnaps: false,
             console: "",
-            operation: ""
+            operation: "",
+            dryRunOutput: "",
+            dryRunResult: false
         }
     }
 
@@ -109,10 +111,44 @@ class DeviceView extends Component {
             this.setState({
                 alertType: `dryrun${res.body.status}`,
                 console: res.body.text,
+                dryRunOutput: this.parseDryRunOutput(res.body.text),
                 operation: "Dry-run"
             });
             this.animateConsole();
         })
+    }
+
+    parseDryRunOutput(output) {
+        let parsedOutput = "";
+        if (JSON.parse(output)["output"]["overall-configuration-status"] === "complete") {
+            this.setState({
+                dryRunResult: true
+            });
+            let results = JSON.parse(output)["output"]["node-config-results"];
+            if (results !== undefined) {
+                results["node-config-result"].forEach(result => {
+                    console.log(result["configuration"]);
+                    parsedOutput = result["configuration"];
+                })
+            }
+        } else {
+            this.setState({
+                dryRunResult: false
+            });
+            let results = JSON.parse(output)["output"]["node-config-results"];
+            if (results !== undefined) {
+                results["node-config-result"].forEach(result => {
+                    console.log(result["configuration"]);
+                    parsedOutput = result["error-message"];
+                })
+            }
+        }
+        if (parsedOutput !== "") {
+            parsedOutput = parsedOutput.split('\n').map(i => {
+                return <p>{i}</p>
+            });
+        }
+        return parsedOutput
     }
 
     animateConsole() {
@@ -196,6 +232,12 @@ class DeviceView extends Component {
     consoleHandler() {
         this.setState({
             showConsole: !this.state.showConsole
+        })
+    }
+
+    clearDryRun(){
+        this.setState({
+            dryRunOutput: ""
         })
     }
 
@@ -287,7 +329,15 @@ class DeviceView extends Component {
                 {this.state.showConsole ? <ConsoleModal consoleHandler={this.consoleHandler.bind(this)}
                                                         content={this.state.console}
                                                         operation={this.state.operation}/> : null }
-
+                {this.state.dryRunOutput ?
+                    <Container fluid className="container-props">
+                        <div className={this.state.dryRunResult ? "dryRunOutput dryRunSuccess" : "dryRunOutput dryRunFail"}>
+                            <h2 style={{marginTop: "5px"}}>Dry run output</h2>
+                            {this.state.dryRunOutput}
+                            <br/>
+                            <Button onClick={this.clearDryRun.bind(this)}>Close</Button>
+                        </div>
+                    </Container> : null}
                 <Container fluid className="container-props">
                     <div className="editor">
                         <div className="uniconfig">

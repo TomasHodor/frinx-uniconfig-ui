@@ -29,6 +29,21 @@
     box-shadow: 0px 2px 20px 0px rgba(0,0,0,0.1);
 }
 
+.dryRunOutput {
+    text-align: left;
+    padding: 20px;
+    max-width: 1400px;
+    box-shadow: 0px 2px 20px 0px rgba(0,0,0,0.1);
+}
+
+.dryRunSuccess {
+    background-color: lightgreen;
+}
+
+.dryRunFail {
+    background-color: lightcoral;
+}
+
 button {
     margin-left: 5px;
 }
